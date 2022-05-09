@@ -23,6 +23,10 @@ return new class extends Migration {
                 ->foreignId("company_id")
                 ->constrained()
                 ->onDelete("cascade");
+            $table
+                ->foreignId("user_id")
+                ->constrained()
+                ->onDelete("cascade");
             $table->timestamps();
         });
     }

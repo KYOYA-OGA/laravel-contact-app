@@ -10,9 +10,14 @@ class ContactController extends Controller
 {
     public function index()
     {
-        $contacts = Contact::latestFirst()
-        ->paginate(10);
-        $companies = Company::orderBy("name")
+        $user = auth()->user();
+        $contacts = $user
+            ->contacts()
+            ->latestFirst()
+            ->paginate(10);
+        $companies = $user
+            ->companies()
+            ->orderBy("name")
             ->pluck("name", "id")
             ->prepend("All Companies", "");
 
@@ -22,7 +27,10 @@ class ContactController extends Controller
     public function create()
     {
         $contact = new Contact();
-        $companies = Company::orderBy("name")
+        $companies = auth()
+            ->user()
+            ->companies()
+            ->orderBy("name")
             ->pluck("name", "id")
             ->prepend("All Companies", "");
 
@@ -39,7 +47,10 @@ class ContactController extends Controller
             "company_id" => "required|exists:companies,id",
         ]);
 
-        Contact::create($request->all());
+        $request
+            ->user()
+            ->contacts()
+            ->create($request->all());
 
         return redirect()
             ->route("contacts.index")
@@ -48,13 +59,21 @@ class ContactController extends Controller
 
     public function show($id)
     {
-        $contact = Contact::findOrFail($id);
+        $contact = $this->findContact($id);
         return view("contacts.show", compact("contact"));
+    }
+
+    protected function findContact($id)
+    {
+        return Contact::findOrFail($id);
     }
 
     public function edit($id)
     {
-        $companies = Company::orderBy("name")
+        $companies = auth()
+            ->user()
+            ->companies()
+            ->orderBy("name")
             ->pluck("name", "id")
             ->prepend("All Companies", "");
         $contact = Contact::findOrFail($id);
